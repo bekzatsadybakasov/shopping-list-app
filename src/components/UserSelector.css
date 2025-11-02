@@ -1,0 +1,36 @@
+.user-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.user-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.user-select {
+  padding: 6px 12px;
+  border: 2px solid #90ee90;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: white;
+  color: #000;
+  cursor: pointer;
+  outline: none;
+}
+
+.user-select:hover {
+  border-color: #7fdd7f;
+}
+
+.user-select:focus {
+  border-color: #7fdd7f;
+  box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.2);
+}
+
