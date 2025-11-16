@@ -11,7 +11,7 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState('Alex'); // Default user
+  const [currentUser, setCurrentUser] = useState(null); // Start with null (not logged in)
 
   const users = ['Alex', 'Kate', 'Ben'];
 
@@ -21,4 +21,11 @@ export const UserProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
+
+
+
+
+
+
+
 

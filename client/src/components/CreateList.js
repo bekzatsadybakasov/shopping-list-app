@@ -30,24 +30,24 @@ const CreateList = ({ onSave, onCancel }) => {
           <input
             type="text"
             className="field-input"
-            placeholder="Enter list name (you can include emoji like 🚗 Car care)..."
+            placeholder="Enter list name ..."
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             autoFocus
           />
           <div className="field-hint">
-            You can add emoji directly in the name, for example: "🚗 Car care" or "🌱 Garden care"
+           т
           </div>
         </div>
       </form>
 
       <div className="action-buttons">
-        <button className="save-btn" onClick={handleSubmit}>
-          CREATE LIST
-        </button>
         <button className="cancel-btn" onClick={onCancel}>
           CANCEL
+        </button>
+        <button className="save-btn" onClick={handleSubmit}>
+          CREATE LIST
         </button>
       </div>
     </div>

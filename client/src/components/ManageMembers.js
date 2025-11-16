@@ -93,11 +93,11 @@ const ManageMembers = ({ listData, currentUser, onClose, onSave }) => {
       )}
 
       <div className="action-buttons">
-        <button className="save-changes-btn" onClick={handleSaveChanges}>
-          SAVE CHANGES
-        </button>
         <button className="close-btn" onClick={onClose}>
           CLOSE
+        </button>
+        <button className="save-changes-btn" onClick={handleSaveChanges}>
+          SAVE CHANGES
         </button>
       </div>
     </div>

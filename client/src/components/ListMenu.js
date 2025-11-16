@@ -24,24 +24,26 @@ const ListMenu = ({ list, currentUser, onArchive, onDelete, onUnarchive, onLeave
     };
   }, [isOpen]);
 
-  const handleArchive = () => {
+  const handleArchive = (e) => {
+    e.stopPropagation();
     onArchive(list.id);
     setIsOpen(false);
   };
 
-  const handleUnarchive = () => {
+  const handleUnarchive = (e) => {
+    e.stopPropagation();
     onUnarchive(list.id);
     setIsOpen(false);
   };
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${list.name}"? This cannot be undone.`)) {
-      onDelete(list.id);
-      setIsOpen(false);
-    }
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    onDelete(list.id);
+    setIsOpen(false);
   };
 
-  const handleLeave = () => {
+  const handleLeave = (e) => {
+    e.stopPropagation();
     if (window.confirm(`Are you sure you want to leave "${list.name}"?`)) {
       onLeave(list.id);
       setIsOpen(false);
@@ -60,7 +62,7 @@ const ListMenu = ({ list, currentUser, onArchive, onDelete, onUnarchive, onLeave
         ⋯
       </button>
       {isOpen && (
-        <div className="list-menu-dropdown">
+        <div className="list-menu-dropdown" onClick={(e) => e.stopPropagation()}>
           {!list.archived && (
             <>
               {isOwner && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { getListById, updateList, archiveList, unarchiveList } from '../data/mockData';
+import { getListById, updateList } from '../data/mockData';
 import ManageMembers from './ManageMembers';
 import AddItem from './AddItem';
 import './ShoppingListDetail.css';
@@ -57,6 +57,7 @@ const ShoppingListDetail = () => {
 
   const handleArchive = () => {
     if (window.confirm(`Are you sure you want to archive "${listData.name}"?`)) {
+      const { archiveList } = require('../data/mockData');
       archiveList(listData.id);
       navigate('/');
     }
@@ -123,17 +124,10 @@ const ShoppingListDetail = () => {
   };
 
   const handleSaveChanges = () => {
-    // Save all changes
+    // Changes are already saved via updateList
     alert('Changes saved!');
   };
 
-  const handleDeleteList = () => {
-    if (window.confirm(`Are you sure you want to delete "${listData.name}"? This cannot be undone.`)) {
-      const { deleteList } = require('../data/mockData');
-      deleteList(listData.id);
-      navigate('/');
-    }
-  };
 
   const filteredItems = listData.items.filter(item => {
     if (itemFilter === 'all') return true;
@@ -158,7 +152,12 @@ const ShoppingListDetail = () => {
   };
 
   const handleNameBlur = () => {
-    handleSaveName();
+    if (listName.trim()) {
+      handleSaveName();
+    } else {
+      setListName(listData.name);
+      setIsEditingName(false);
+    }
   };
 
   return (
@@ -184,7 +183,6 @@ const ShoppingListDetail = () => {
               onKeyDown={handleNameKeyDown}
               onBlur={handleNameBlur}
               className="name-input"
-              placeholder="List name (you can include emoji)..."
               autoFocus
             />
             <button 
@@ -316,37 +314,42 @@ const ShoppingListDetail = () => {
       </button>
 
       <div className="action-buttons">
-        <button className="delete-list-btn" onClick={handleDeleteList}>
-          ✗ Delete
-        </button>
         <button className="save-btn" onClick={handleSaveChanges}>
           ✓ SAVE
         </button>
       </div>
 
       {showManageMembers && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={() => setShowManageMembers(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <ManageMembers
-            listData={listData}
-            currentUser={currentUser}
-            onClose={() => setShowManageMembers(false)}
-            onSave={(updatedMembers) => handleUpdateMembers(updatedMembers)}
-          />
+              listData={listData}
+              currentUser={currentUser}
+              onClose={() => setShowManageMembers(false)}
+              onSave={handleUpdateMembers}
+            />
+          </div>
         </div>
       )}
 
       {showAddItem && (
-        <div className="modal-overlay">
-          <AddItem
-            item={editingItem}
-            onSave={handleAddItem}
-            onCancel={() => {
-              setShowAddItem(false);
-              setEditingItem(null);
-            }}
-          />
+        <div className="modal-overlay" onClick={() => {
+          setShowAddItem(false);
+          setEditingItem(null);
+        }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <AddItem
+              item={editingItem}
+              onSave={handleAddItem}
+              onCancel={() => {
+                setShowAddItem(false);
+                setEditingItem(null);
+              }}
+            />
+          </div>
         </div>
       )}
+
     </div>
   );
 };

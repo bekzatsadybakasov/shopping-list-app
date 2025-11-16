@@ -87,11 +87,11 @@ const AddItem = ({ item, onSave, onCancel }) => {
       </form>
 
       <div className="action-buttons">
-        <button className="save-btn" onClick={handleSubmit}>
-          SAVE CHANGES
-        </button>
         <button className="cancel-btn" onClick={onCancel}>
           CANCEL
+        </button>
+        <button className="save-btn" onClick={handleSubmit}>
+          SAVE CHANGES
         </button>
       </div>
     </div>

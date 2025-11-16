@@ -5,6 +5,7 @@ import { getListsForUser, getArchivedListsForUser, archiveList, unarchiveList, d
 import CreateList from './CreateList';
 import UserSelector from './UserSelector';
 import ListMenu from './ListMenu';
+import ConfirmDialog from './ConfirmDialog';
 import './ShoppingListsPage.css';
 
 const ShoppingListsPage = () => {
@@ -12,6 +13,7 @@ const ShoppingListsPage = () => {
   const [lists, setLists] = useState([]);
   const [filter, setFilter] = useState('All');
   const [showCreateList, setShowCreateList] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, listId: null, listName: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,8 +73,22 @@ const ShoppingListsPage = () => {
   };
 
   const handleDelete = (listId) => {
-    deleteList(listId);
-    updateLists();
+    const list = lists.find(l => l.id === listId);
+    if (list) {
+      setDeleteConfirm({ isOpen: true, listId, listName: list.name });
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm.listId) {
+      deleteList(deleteConfirm.listId);
+      updateLists();
+    }
+    setDeleteConfirm({ isOpen: false, listId: null, listName: '' });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ isOpen: false, listId: null, listName: '' });
   };
 
   const handleLeave = (listId) => {
@@ -162,6 +178,17 @@ const ShoppingListsPage = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Shopping List"
+        message={`Are you sure you want to delete "${deleteConfirm.listName}"? This action cannot be undone.`}
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        type="danger"
+      />
     </div>
   );
 };

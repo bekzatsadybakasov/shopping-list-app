@@ -41,32 +41,30 @@
 .list-title-section {
   display: flex;
   align-items: center;
+  gap: 15px;
   padding: 20px;
   background-color: white;
 }
 
-.list-title-combined {
+.list-icon-large {
+  font-size: 40px;
+}
+
+.list-title {
   font-size: 28px;
   font-weight: 700;
   color: #000;
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   flex: 1;
 }
 
-.list-icon-inline {
-  font-size: 32px;
-}
-
-.list-title-combined.editable {
+.list-title.editable {
   cursor: pointer;
   transition: opacity 0.2s;
   position: relative;
 }
 
-.list-title-combined.editable:hover {
+.list-title.editable:hover {
   opacity: 0.8;
 }
 
@@ -91,22 +89,6 @@
   font-size: 20px;
   font-weight: 600;
   flex: 1;
-}
-
-.name-input-combined {
-  padding: 10px;
-  border: 2px solid #90ee90;
-  border-radius: 8px;
-  font-size: 20px;
-  font-weight: 600;
-  flex: 1;
-  min-width: 200px;
-}
-
-.edit-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
 }
 
 .save-name-btn {
@@ -139,62 +121,6 @@
 
 .cancel-name-btn:hover {
   background-color: #ffcdd2;
-}
-
-.edit-container-full {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  flex: 1;
-  width: 100%;
-}
-
-.combined-edit-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.icon-color-edit {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.icon-preview {
-  font-size: 48px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  border-radius: 10px;
-  border: 2px solid #90ee90;
-}
-
-.icon-input-small {
-  padding: 8px;
-  border: 2px solid #90ee90;
-  border-radius: 8px;
-  font-size: 18px;
-  width: 80px;
-  text-align: center;
-}
-
-.icon-input-small:focus {
-  outline: none;
-  border-color: #7fdd7f;
-}
-
-.color-input {
-  width: 50px;
-  height: 50px;
-  border: 2px solid #90ee90;
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 0;
 }
 
 .members-section {
