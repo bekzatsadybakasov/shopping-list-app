@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { getListById, updateList } from '../data/mockData';
+import api from '../services';
 import ManageMembers from './ManageMembers';
 import AddItem from './AddItem';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorMessage from './ErrorMessage';
 import './ShoppingListDetail.css';
 
 const ShoppingListDetail = () => {
@@ -17,23 +19,49 @@ const ShoppingListDetail = () => {
   const [showAddItem, setShowAddItem] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [itemFilter, setItemFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const list = getListById(listId);
-    if (list) {
-      setListData(list);
-      setListName(list.name);
-    } else {
-      navigate('/');
-    }
-  }, [listId, navigate]);
+    loadListData();
+  }, [listId]);
 
-  if (!listData) {
-    return <div>Loading...</div>;
+  const loadListData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await api.getList(listId);
+      if (list) {
+        setListData(list);
+        setListName(list.name);
+      } else {
+        setError('List not found');
+        setTimeout(() => navigate('/'), 2000);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to load list');
+      console.error('Error loading list:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  const isOwner = listData.owner === currentUser;
-  const isMember = listData.members.some(m => m.name === currentUser);
+  if (error && !listData) {
+    return <ErrorMessage message={error} onRetry={loadListData} />;
+  }
+
+  if (!listData) {
+    return null;
+  }
+
+  const isOwner = listData.owner === currentUser || listData.ownerUuIdentity === currentUser;
+  const isMember = listData.members?.some(m => 
+    m.name === currentUser || m.uuIdentity === currentUser
+  ) || isOwner;
   
   if (!isOwner && !isMember) {
     navigate('/');
@@ -44,71 +72,86 @@ const ShoppingListDetail = () => {
     navigate('/');
   };
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (!listName.trim()) {
       setListName(listData.name);
       setIsEditingName(false);
       return;
     }
-    const updated = updateList(listData.id, { name: listName.trim() });
-    setListData(updated);
-    setIsEditingName(false);
-  };
-
-  const handleArchive = () => {
-    if (window.confirm(`Are you sure you want to archive "${listData.name}"?`)) {
-      const { archiveList } = require('../data/mockData');
-      archiveList(listData.id);
-      navigate('/');
+    try {
+      setError(null);
+      const updated = await api.updateList(listData.id, { name: listName.trim() });
+      setListData(updated);
+      setIsEditingName(false);
+    } catch (err) {
+      setError(err.message || 'Failed to update list name');
+      setListName(listData.name);
+      setIsEditingName(false);
     }
   };
 
-  const handleToggleItemResolved = (itemId) => {
-    const updatedItems = listData.items.map(item =>
-      item.id === itemId ? { ...item, resolved: !item.resolved } : item
-    );
-    const completed = updatedItems.filter(i => i.resolved).length;
-    const updated = updateList(listData.id, {
-      items: updatedItems,
-      progress: { completed, total: updatedItems.length }
-    });
-    setListData(updated);
+  const handleArchive = async () => {
+    if (window.confirm(`Are you sure you want to archive "${listData.name}"?`)) {
+      try {
+        setError(null);
+        await api.archiveListById(listData.id);
+        navigate('/');
+      } catch (err) {
+        setError(err.message || 'Failed to archive list');
+      }
+    }
   };
 
-  const handleDeleteItem = (itemId) => {
-    const updatedItems = listData.items.filter(item => item.id !== itemId);
-    const completed = updatedItems.filter(i => i.resolved).length;
-    const updated = updateList(listData.id, {
-      items: updatedItems,
-      progress: { completed, total: updatedItems.length }
-    });
-    setListData(updated);
+  const handleToggleItemResolved = async (itemId) => {
+    try {
+      setError(null);
+      const updated = await api.toggleResolved(listData.id, itemId);
+      setListData(updated);
+    } catch (err) {
+      setError(err.message || 'Failed to toggle item status');
+    }
   };
 
-  const handleAddItem = (newItem) => {
-    if (editingItem) {
-      // Update existing item
-      const updatedItems = listData.items.map(item =>
-        item.id === editingItem.id ? { ...newItem, id: editingItem.id } : item
-      );
-      const completed = updatedItems.filter(i => i.resolved).length;
-      const updated = updateList(listData.id, {
-        items: updatedItems,
-        progress: { completed, total: updatedItems.length }
-      });
+  const handleDeleteItem = async (itemId) => {
+    try {
+      setError(null);
+      await api.deleteItem(listData.id, itemId);
+      const updated = await api.getList(listData.id);
       setListData(updated);
-      setEditingItem(null);
-      setShowAddItem(false);
-    } else {
-      // Add new item
-      const updatedItems = [...listData.items, newItem];
-      const completed = updatedItems.filter(i => i.resolved).length;
-      const updated = updateList(listData.id, {
-        items: updatedItems,
-        progress: { completed, total: updatedItems.length }
-      });
-      setListData(updated);
-      setShowAddItem(false);
+    } catch (err) {
+      setError(err.message || 'Failed to delete item');
+    }
+  };
+
+  const handleAddItem = async (newItem) => {
+    try {
+      setError(null);
+      if (editingItem) {
+        // Update existing item
+        const updated = await api.updateItem(
+          listData.id, 
+          editingItem.id, 
+          {
+            name: newItem.name,
+            quantity: newItem.quantity,
+            measure: newItem.measure
+          }
+        );
+        setListData(updated);
+        setEditingItem(null);
+        setShowAddItem(false);
+      } else {
+        // Add new item
+        const updated = await api.createItem(listData.id, {
+          name: newItem.name,
+          quantity: newItem.quantity,
+          measure: newItem.measure
+        });
+        setListData(updated);
+        setShowAddItem(false);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to save item');
     }
   };
 
@@ -117,19 +160,29 @@ const ShoppingListDetail = () => {
     setShowAddItem(true);
   };
 
-  const handleUpdateMembers = (updatedMembers) => {
-    const updated = updateList(listData.id, { members: updatedMembers });
-    setListData(updated);
-    setShowManageMembers(false);
+  const handleUpdateMembers = async (updatedMembers) => {
+    try {
+      setError(null);
+      // Convert members format if needed
+      const membersToSave = updatedMembers.map(m => ({
+        uuIdentity: m.name || m.uuIdentity,
+        isOwner: m.isOwner || false
+      }));
+      
+      const updated = await api.updateList(listData.id, { members: membersToSave });
+      setListData(updated);
+      setShowManageMembers(false);
+    } catch (err) {
+      setError(err.message || 'Failed to update members');
+    }
   };
 
   const handleSaveChanges = () => {
-    // Changes are already saved via updateList
-    alert('Changes saved!');
+    // Changes are already saved via individual handlers
+    alert('All changes saved!');
   };
 
-
-  const filteredItems = listData.items.filter(item => {
+  const filteredItems = (listData.items || []).filter(item => {
     if (itemFilter === 'all') return true;
     if (itemFilter === 'unresolved') return !item.resolved;
     if (itemFilter === 'resolved') return item.resolved;
@@ -162,6 +215,8 @@ const ShoppingListDetail = () => {
 
   return (
     <div className="shopping-list-detail">
+      {error && <ErrorMessage message={error} onRetry={null} />}
+      
       <div className="header">
         <div className="nav-bar">
           <button className="back-btn" onClick={handleBack}>
@@ -227,9 +282,9 @@ const ShoppingListDetail = () => {
             </button>
           </div>
           <div className="members-list">
-            {listData.members.map((member) => (
-              <span key={member.id} className="member-tag">
-                {member.name}
+            {(listData.members || []).map((member, index) => (
+              <span key={member.id || member.uuIdentity || index} className="member-tag">
+                {member.name || member.uuIdentity}
               </span>
             ))}
           </div>
@@ -262,7 +317,9 @@ const ShoppingListDetail = () => {
           <div key={item.id} className="item-card">
             <div className="item-content">
               <div className="item-info">
-                <span className="item-name">{item.name}</span>
+                <span className={`item-name ${item.resolved ? 'resolved' : ''}`}>
+                  {item.name}
+                </span>
                 <span className="item-quantity">
                   {item.quantity} {item.measure}
                 </span>
@@ -308,7 +365,10 @@ const ShoppingListDetail = () => {
 
       <button
         className="add-item-btn"
-        onClick={() => setShowAddItem(true)}
+        onClick={() => {
+          setEditingItem(null);
+          setShowAddItem(true);
+        }}
       >
         + ADD
       </button>
@@ -349,10 +409,8 @@ const ShoppingListDetail = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
 
 export default ShoppingListDetail;
-

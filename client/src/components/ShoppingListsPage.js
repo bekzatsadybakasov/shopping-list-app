@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { getListsForUser, getArchivedListsForUser, archiveList, unarchiveList, deleteList, leaveList } from '../data/mockData';
+import api from '../services';
 import CreateList from './CreateList';
 import UserSelector from './UserSelector';
 import ListMenu from './ListMenu';
 import ConfirmDialog from './ConfirmDialog';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorMessage from './ErrorMessage';
 import './ShoppingListsPage.css';
 
 const ShoppingListsPage = () => {
@@ -14,30 +16,34 @@ const ShoppingListsPage = () => {
   const [filter, setFilter] = useState('All');
   const [showCreateList, setShowCreateList] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, listId: null, listName: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Update lists when user changes
     updateLists();
   }, [currentUser, filter]);
 
-  const updateLists = () => {
-    if (filter === 'Archived') {
-      const archivedLists = getArchivedListsForUser(currentUser);
-      setLists(archivedLists);
-    } else {
-      const userLists = getListsForUser(currentUser);
-      setLists(userLists);
+  const updateLists = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filterValue = filter === 'Archived' ? 'archived' : 'all';
+      const response = await api.getLists(filterValue, currentUser);
+      setLists(response.itemList || []);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error loading lists:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const filteredLists = lists.filter(list => {
     const isOwner = list.owner === currentUser;
-    const isMember = list.members.some(m => m.name === currentUser);
+    const isMember = list.members?.some(m => m.name === currentUser);
     
-    // For Archived filter, lists are already filtered by getArchivedListsForUser
     if (filter === 'Archived') return true;
-    
     if (filter === 'All') return true;
     if (filter === 'Owned') return isOwner;
     if (filter === 'Shared') return isMember && !isOwner;
@@ -48,28 +54,41 @@ const ShoppingListsPage = () => {
     navigate(`/list/${listId}`);
   };
 
-  const handleCreateList = (newList) => {
-    const { addList } = require('../data/mockData');
-    const list = addList({
-      name: newList.name,
-      owner: currentUser,
-      members: [{ id: 1, name: currentUser, isOwner: true }],
-      items: []
-    });
-    // Refresh lists
-    updateLists();
-    setShowCreateList(false);
-    navigate(`/list/${list.id}`);
+  const handleCreateList = async (newList) => {
+    try {
+      const list = await api.createList({
+        name: newList.name,
+        owner: currentUser,
+        members: [{ id: 1, name: currentUser, isOwner: true }],
+        items: []
+      });
+      await updateLists();
+      setShowCreateList(false);
+      navigate(`/list/${list.id}`);
+    } catch (err) {
+      setError(err.message);
+      alert('Error creating list: ' + err.message);
+    }
   };
 
-  const handleArchive = (listId) => {
-    archiveList(listId);
-    updateLists();
+  const handleArchive = async (listId) => {
+    try {
+      await api.archiveListById(listId);
+      await updateLists();
+    } catch (err) {
+      setError(err.message);
+      alert('Error archiving list: ' + err.message);
+    }
   };
 
-  const handleUnarchive = (listId) => {
-    unarchiveList(listId);
-    updateLists();
+  const handleUnarchive = async (listId) => {
+    try {
+      await api.unarchiveListById(listId);
+      await updateLists();
+    } catch (err) {
+      setError(err.message);
+      alert('Error unarchiving list: ' + err.message);
+    }
   };
 
   const handleDelete = (listId) => {
@@ -79,10 +98,15 @@ const ShoppingListsPage = () => {
     }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteConfirm.listId) {
-      deleteList(deleteConfirm.listId);
-      updateLists();
+      try {
+        await api.deleteListById(deleteConfirm.listId);
+        await updateLists();
+      } catch (err) {
+        setError(err.message);
+        alert('Error deleting list: ' + err.message);
+      }
     }
     setDeleteConfirm({ isOpen: false, listId: null, listName: '' });
   };
@@ -91,14 +115,28 @@ const ShoppingListsPage = () => {
     setDeleteConfirm({ isOpen: false, listId: null, listName: '' });
   };
 
-  const handleLeave = (listId) => {
-    leaveList(listId, currentUser);
-    updateLists();
+  const handleLeave = async (listId) => {
+    try {
+      await api.leaveListById(listId, currentUser);
+      await updateLists();
+    } catch (err) {
+      setError(err.message);
+      alert('Error leaving list: ' + err.message);
+    }
   };
+
+  if (loading && lists.length === 0) {
+    return <LoadingSpinner />;
+  }
+
+  if (error && lists.length === 0) {
+    return <ErrorMessage message={error} onRetry={updateLists} />;
+  }
 
   return (
     <div className="shopping-lists-page">
       <UserSelector />
+      {error && <ErrorMessage message={error} onRetry={updateLists} />}
       <div className="header">
         <div className="header-title">
           <span className="cart-icon">🛒</span>
@@ -117,6 +155,8 @@ const ShoppingListsPage = () => {
           </button>
         ))}
       </div>
+
+      {loading && <LoadingSpinner />}
 
       <div className="lists-container">
         {filter !== 'Archived' && (
@@ -148,19 +188,19 @@ const ShoppingListsPage = () => {
               <div className="detail-item">
                 <span className="detail-label">PROGRESS:</span>
                 <span className="detail-value">
-                  {list.progress.completed}/{list.progress.total} ✓
+                  {list.progress?.completed || 0}/{list.progress?.total || 0} ✓
                 </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">MEMBERS:</span>
                 <span className="detail-value">
-                  👥 {list.memberCount}
+                  👥 {list.memberCount || 0}
                 </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">UPDATED:</span>
                 <span className="detail-value">
-                  🕐 {list.updated}
+                  🕐 {list.updated || 'N/A'}
                 </span>
               </div>
             </div>
@@ -193,5 +233,4 @@ const ShoppingListsPage = () => {
   );
 };
 
-export default ShoppingListsPage;
-
+export default ShoppingListsPage; 
