@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isOwner } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const removeMemberSchema = {
   required: ['id', 'awid', 'memberUuIdentity'],
@@ -57,13 +57,27 @@ async function removeMember(req, res) {
       });
     }
 
-    const mockOwnerUuIdentity = 'owner123';
-    if (!isOwner(session, mockOwnerUuIdentity) && !session.authorizedProfiles.includes('Authorities')) {
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
+        uuAppErrorMap: {
+          'shoppingListMember/removeMember/listNotFound': {
+            message: 'List not found',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    if (list.ownerUuIdentity !== session.uuIdentity) {
       return res.status(403).json({
         status: 403,
         error: 'Only owner can remove members',
         uuAppErrorMap: {
-          'shoppingListMember/removeMember/ownerOnlyError': {
+          'shoppingListMember/removeMember/accessDenied': {
             message: 'Only owner can remove members',
             paramMap: {}
           }
@@ -71,13 +85,30 @@ async function removeMember(req, res) {
       });
     }
 
+    // Нельзя удалить владельца
+    const memberToRemove = list.members.find(m => m.uuIdentity === dtoIn.memberUuIdentity);
+    if (memberToRemove && memberToRemove.isOwner) {
+      return res.status(400).json({
+        status: 400,
+        error: 'Cannot remove owner',
+        uuAppErrorMap: {
+          'shoppingListMember/removeMember/cannotRemoveOwner': {
+            message: 'Cannot remove owner',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    list.members = list.members.filter(m => m.uuIdentity !== dtoIn.memberUuIdentity);
+    list.updated = new Date();
+    const updatedList = await list.save();
+
     const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      members: [
-        { uuIdentity: 'owner123', isOwner: true }
-      ],
-      memberCount: 1,
+      awid: updatedList.awid,
+      id: updatedList._id.toString(),
+      members: updatedList.members,
+      memberCount: updatedList.memberCount,
       uuAppErrorMap
     };
 
@@ -97,4 +128,6 @@ async function removeMember(req, res) {
 }
 
 module.exports = removeMember;
+
+
 

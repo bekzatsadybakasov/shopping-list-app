@@ -1,5 +1,6 @@
 const { validateDtoIn } = require('../../../middleware/validation');
 const { requireAuth } = require('../../../middleware/authorization');
+const ShoppingList = require('../../../models/ShoppingList');
 
 // Схема валидации
 const createSchema = {
@@ -67,26 +68,33 @@ async function create(req, res) {
       });
     }
 
-    // Возврат dtoOut (пока без бизнес-логики)
-    const dtoOut = {
+    // Создание в MongoDB
+    const newList = new ShoppingList({
       awid: dtoIn.awid,
-      id: `list-${Date.now()}`,
       name: dtoIn.name.trim(),
       state: 'active',
       ownerUuIdentity: session.uuIdentity,
-      members: [
-        {
-          uuIdentity: session.uuIdentity,
-          isOwner: true
-        }
-      ],
+      members: [{
+        uuIdentity: session.uuIdentity,
+        isOwner: true
+      }],
       items: [],
-      progress: {
-        completed: 0,
-        total: 0
-      },
-      memberCount: 1,
-      updated: new Date().toISOString(),
+      progress: { completed: 0, total: 0 }
+    });
+
+    const savedList = await newList.save();
+
+    const dtoOut = {
+      awid: savedList.awid,
+      id: savedList._id.toString(),
+      name: savedList.name,
+      state: savedList.state,
+      ownerUuIdentity: savedList.ownerUuIdentity,
+      members: savedList.members,
+      items: savedList.items,
+      progress: savedList.progress,
+      memberCount: savedList.memberCount,
+      updated: savedList.updated.toISOString(),
       uuAppErrorMap
     };
 
@@ -106,4 +114,6 @@ async function create(req, res) {
 }
 
 module.exports = create;
+
+
 

@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isOwner } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const addMemberSchema = {
   required: ['id', 'awid', 'memberUuIdentity'],
@@ -57,13 +57,27 @@ async function addMember(req, res) {
       });
     }
 
-    const mockOwnerUuIdentity = 'owner123';
-    if (!isOwner(session, mockOwnerUuIdentity) && !session.authorizedProfiles.includes('Authorities')) {
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
+        uuAppErrorMap: {
+          'shoppingListMember/addMember/listNotFound': {
+            message: 'List not found',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    if (list.ownerUuIdentity !== session.uuIdentity) {
       return res.status(403).json({
         status: 403,
         error: 'Only owner can add members',
         uuAppErrorMap: {
-          'shoppingListMember/addMember/ownerOnlyError': {
+          'shoppingListMember/addMember/accessDenied': {
             message: 'Only owner can add members',
             paramMap: {}
           }
@@ -71,14 +85,32 @@ async function addMember(req, res) {
       });
     }
 
+    // Проверка, не является ли пользователь уже участником
+    if (list.members.some(m => m.uuIdentity === dtoIn.memberUuIdentity)) {
+      return res.status(400).json({
+        status: 400,
+        error: 'Member already exists',
+        uuAppErrorMap: {
+          'shoppingListMember/addMember/memberExists': {
+            message: 'Member already exists',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    list.members.push({
+      uuIdentity: dtoIn.memberUuIdentity,
+      isOwner: false
+    });
+    list.updated = new Date();
+    const updatedList = await list.save();
+
     const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      members: [
-        { uuIdentity: 'owner123', isOwner: true },
-        { uuIdentity: dtoIn.memberUuIdentity, isOwner: false }
-      ],
-      memberCount: 2,
+      awid: updatedList.awid,
+      id: updatedList._id.toString(),
+      members: updatedList.members,
+      memberCount: updatedList.memberCount,
       uuAppErrorMap
     };
 
@@ -98,4 +130,6 @@ async function addMember(req, res) {
 }
 
 module.exports = addMember;
+
+
 

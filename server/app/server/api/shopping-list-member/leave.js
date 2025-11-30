@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isMember } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const leaveSchema = {
   required: ['id', 'awid'],
@@ -56,23 +56,52 @@ async function leave(req, res) {
       });
     }
 
-    // Проверка, что пользователь является участником (не owner)
-    const mockMembers = [
-      { uuIdentity: 'owner123', isOwner: true },
-      { uuIdentity: session.uuIdentity, isOwner: false }
-    ];
-    if (!isMember(session, mockMembers) || isMember(session, mockMembers.filter(m => m.isOwner))) {
-      return res.status(403).json({
-        status: 403,
-        error: 'Only members (not owners) can leave the list',
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
         uuAppErrorMap: {
-          'shoppingListMember/leave/memberOnlyError': {
-            message: 'Only members (not owners) can leave the list',
+          'shoppingListMember/leave/listNotFound': {
+            message: 'List not found',
             paramMap: {}
           }
         }
       });
     }
+
+    // Проверка, что пользователь является участником (не owner)
+    const member = list.members.find(m => m.uuIdentity === session.uuIdentity);
+    if (!member) {
+      return res.status(403).json({
+        status: 403,
+        error: 'User is not a member of this list',
+        uuAppErrorMap: {
+          'shoppingListMember/leave/notMember': {
+            message: 'User is not a member of this list',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    if (member.isOwner || list.ownerUuIdentity === session.uuIdentity) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Owner cannot leave the list',
+        uuAppErrorMap: {
+          'shoppingListMember/leave/ownerCannotLeave': {
+            message: 'Owner cannot leave the list',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    list.members = list.members.filter(m => m.uuIdentity !== session.uuIdentity);
+    list.updated = new Date();
+    await list.save();
 
     const dtoOut = {
       awid: dtoIn.awid,
@@ -97,4 +126,6 @@ async function leave(req, res) {
 }
 
 module.exports = leave;
+
+
 

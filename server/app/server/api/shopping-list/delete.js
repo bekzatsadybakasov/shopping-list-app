@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isOwner } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const deleteSchema = {
   required: ['id', 'awid'],
@@ -65,22 +65,39 @@ async function deleteList(req, res) {
       });
     }
 
-    // Проверка прав (только owner может удалять)
-    const mockOwnerUuIdentity = 'owner123';
-    if (!isOwner(session, mockOwnerUuIdentity) && !session.authorizedProfiles.includes('Authorities')) {
-      return res.status(403).json({
-        status: 403,
-        error: 'Only owner can delete the list',
+    // Получение списка
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
         uuAppErrorMap: {
-          'shoppingList/delete/ownerOnlyError': {
-            message: 'Only owner can delete the list',
+          'shoppingList/delete/listNotFound': {
+            message: 'List not found',
             paramMap: {}
           }
         }
       });
     }
 
-    // Возврат dtoOut
+    // Проверка прав (только владелец)
+    if (list.ownerUuIdentity !== session.uuIdentity) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Only owner can delete list',
+        uuAppErrorMap: {
+          'shoppingList/delete/accessDenied': {
+            message: 'Only owner can delete list',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    // Удаление
+    await ShoppingList.findByIdAndDelete(dtoIn.id);
+
     const dtoOut = {
       awid: dtoIn.awid,
       id: dtoIn.id,
@@ -104,4 +121,6 @@ async function deleteList(req, res) {
 }
 
 module.exports = deleteList;
+
+
 

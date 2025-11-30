@@ -1,4 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const updateSchema = {
   required: ['id', 'shoppingListId', 'awid'],
@@ -59,14 +60,67 @@ async function update(req, res) {
       });
     }
 
+    const list = await ShoppingList.findById(dtoIn.shoppingListId);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
+        uuAppErrorMap: {
+          'shoppingListItem/update/listNotFound': {
+            message: 'List not found',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    // Проверка доступа
+    const isOwner = list.ownerUuIdentity === session.uuIdentity;
+    const isMember = list.members.some(m => m.uuIdentity === session.uuIdentity);
+    
+    if (!isOwner && !isMember) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Access denied',
+        uuAppErrorMap: {
+          'shoppingListItem/update/accessDenied': {
+            message: 'Access denied',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    const item = list.items.find(i => i.id === dtoIn.id);
+    if (!item) {
+      return res.status(404).json({
+        status: 404,
+        error: 'Item not found',
+        uuAppErrorMap: {
+          'shoppingListItem/update/itemNotFound': {
+            message: 'Item not found',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    if (dtoIn.name !== undefined) item.name = dtoIn.name.trim();
+    if (dtoIn.quantity !== undefined) item.quantity = dtoIn.quantity;
+    if (dtoIn.measure !== undefined) item.measure = dtoIn.measure.trim();
+
+    list.updateProgress();
+    const updatedList = await list.save();
+
     const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      shoppingListId: dtoIn.shoppingListId,
-      name: dtoIn.name || 'Updated Item',
-      quantity: dtoIn.quantity || 1,
-      measure: dtoIn.measure || 'pcs',
-      resolved: false,
+      awid: updatedList.awid,
+      id: item.id,
+      shoppingListId: updatedList._id.toString(),
+      name: item.name,
+      quantity: item.quantity,
+      measure: item.measure,
+      resolved: item.resolved,
       uuAppErrorMap
     };
 
@@ -86,4 +140,6 @@ async function update(req, res) {
 }
 
 module.exports = update;
+
+
 

@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isOwner } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const unarchiveSchema = {
   required: ['id', 'awid'],
@@ -56,24 +56,42 @@ async function unarchive(req, res) {
       });
     }
 
-    const mockOwnerUuIdentity = 'owner123';
-    if (!isOwner(session, mockOwnerUuIdentity) && !session.authorizedProfiles.includes('Authorities')) {
-      return res.status(403).json({
-        status: 403,
-        error: 'Only owner can unarchive the list',
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
         uuAppErrorMap: {
-          'shoppingList/unarchive/ownerOnlyError': {
-            message: 'Only owner can unarchive the list',
+          'shoppingList/unarchive/listNotFound': {
+            message: 'List not found',
             paramMap: {}
           }
         }
       });
     }
 
+    if (list.ownerUuIdentity !== session.uuIdentity) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Only owner can unarchive list',
+        uuAppErrorMap: {
+          'shoppingList/unarchive/accessDenied': {
+            message: 'Only owner can unarchive list',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    list.state = 'active';
+    list.updated = new Date();
+    const unarchivedList = await list.save();
+
     const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      state: 'active',
+      awid: unarchivedList.awid,
+      id: unarchivedList._id.toString(),
+      state: unarchivedList.state,
       uuAppErrorMap
     };
 
@@ -93,4 +111,6 @@ async function unarchive(req, res) {
 }
 
 module.exports = unarchive;
+
+
 

@@ -1,4 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const createSchema = {
   required: ['shoppingListId', 'awid', 'name', 'quantity', 'measure'],
@@ -58,14 +59,58 @@ async function create(req, res) {
       });
     }
 
-    const dtoOut = {
-      awid: dtoIn.awid,
+    const list = await ShoppingList.findById(dtoIn.shoppingListId);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
+        uuAppErrorMap: {
+          'shoppingListItem/create/listNotFound': {
+            message: 'List not found',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    // Проверка доступа (владелец или участник)
+    const isOwner = list.ownerUuIdentity === session.uuIdentity;
+    const isMember = list.members.some(m => m.uuIdentity === session.uuIdentity);
+    
+    if (!isOwner && !isMember) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Access denied',
+        uuAppErrorMap: {
+          'shoppingListItem/create/accessDenied': {
+            message: 'Access denied',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    const newItem = {
       id: `item-${Date.now()}`,
-      shoppingListId: dtoIn.shoppingListId,
       name: dtoIn.name.trim(),
       quantity: dtoIn.quantity,
       measure: dtoIn.measure.trim(),
-      resolved: false,
+      resolved: false
+    };
+
+    list.items.push(newItem);
+    list.updateProgress();
+    const updatedList = await list.save();
+
+    const dtoOut = {
+      awid: updatedList.awid,
+      id: newItem.id,
+      shoppingListId: updatedList._id.toString(),
+      name: newItem.name,
+      quantity: newItem.quantity,
+      measure: newItem.measure,
+      resolved: newItem.resolved,
       uuAppErrorMap
     };
 
@@ -85,4 +130,6 @@ async function create(req, res) {
 }
 
 module.exports = create;
+
+
 

@@ -1,4 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const listSchema = {
   required: ['awid'],
@@ -66,25 +67,52 @@ async function list(req, res) {
       });
     }
 
-    // Возврат dtoOut
-    const pageInfo = dtoIn.pageInfo || { pageIndex: 0, pageSize: 20 };
+    // Построение запроса
+    const query = { awid: dtoIn.awid };
+    const filter = dtoIn.filter || 'all';
+    
+    if (filter === 'archived') {
+      query.state = 'archived';
+    } else if (filter === 'active') {
+      query.state = 'active';
+    }
+
+    // Фильтрация по пользователю
+    query.$or = [
+      { ownerUuIdentity: session.uuIdentity },
+      { 'members.uuIdentity': session.uuIdentity }
+    ];
+
+    // Пагинация
+    const pageIndex = parseInt(dtoIn.pageInfo?.pageIndex) || 0;
+    const pageSize = parseInt(dtoIn.pageInfo?.pageSize) || 20;
+    const skip = pageIndex * pageSize;
+
+    // Получение списков
+    const lists = await ShoppingList.find(query)
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ updated: -1 });
+
+    const total = await ShoppingList.countDocuments(query);
+
+    const itemList = lists.map(list => ({
+      id: list._id.toString(),
+      name: list.name,
+      state: list.state,
+      ownerUuIdentity: list.ownerUuIdentity,
+      progress: list.progress,
+      memberCount: list.memberCount,
+      updated: list.updated.toISOString()
+    }));
+
     const dtoOut = {
       awid: dtoIn.awid,
-      itemList: [
-        {
-          id: 'list1',
-          name: 'Example List 1',
-          state: 'active',
-          ownerUuIdentity: session.uuIdentity,
-          progress: { completed: 2, total: 5 },
-          memberCount: 3,
-          updated: new Date().toISOString()
-        }
-      ],
+      itemList,
       pageInfo: {
-        pageIndex: pageInfo.pageIndex || 0,
-        pageSize: pageInfo.pageSize || 20,
-        total: 1
+        pageIndex,
+        pageSize,
+        total
       },
       uuAppErrorMap
     };
@@ -105,4 +133,6 @@ async function list(req, res) {
 }
 
 module.exports = list;
+
+
 

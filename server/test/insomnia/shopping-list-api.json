@@ -1,0 +1,587 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-11-30T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_shopping_list_create",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/create",
+      "name": "Create Shopping List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"My Shopping List\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_get",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/get?id=LIST_ID&awid=workspace1",
+      "name": "Get Shopping List",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924799000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/list?awid=workspace1&filter=all",
+      "name": "List Shopping Lists",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924798000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_update",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/update",
+      "name": "Update Shopping List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\",\n  \"name\": \"Updated Name\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924797000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_delete",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/delete",
+      "name": "Delete Shopping List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924796000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_archive",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/archive",
+      "name": "Archive Shopping List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924795000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_shopping_list_unarchive",
+      "parentId": "fld_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list/unarchive",
+      "name": "Unarchive Shopping List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924794000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_member_add",
+      "parentId": "fld_member",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-member/addMember",
+      "name": "Add Member",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\",\n  \"memberUuIdentity\": \"user456\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924793000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_member_remove",
+      "parentId": "fld_member",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-member/removeMember",
+      "name": "Remove Member",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\",\n  \"memberUuIdentity\": \"user456\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924792000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_member_leave",
+      "parentId": "fld_member",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-member/leave",
+      "name": "Leave List",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user456"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924791000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_item_create",
+      "parentId": "fld_item",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-item/create",
+      "name": "Create Item",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"shoppingListId\": \"LIST_ID\",\n  \"awid\": \"workspace1\",\n  \"name\": \"Milk\",\n  \"quantity\": 2,\n  \"measure\": \"liters\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924790000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_item_update",
+      "parentId": "fld_item",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-item/update",
+      "name": "Update Item",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"ITEM_ID\",\n  \"shoppingListId\": \"LIST_ID\",\n  \"awid\": \"workspace1\",\n  \"name\": \"Milk 2L\",\n  \"quantity\": 3,\n  \"measure\": \"liters\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924789000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_item_delete",
+      "parentId": "fld_item",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-item/delete",
+      "name": "Delete Item",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"ITEM_ID\",\n  \"shoppingListId\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924788000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_item_toggle",
+      "parentId": "fld_item",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "url": "http://localhost:3001/api/shopping-list-item/toggleResolved",
+      "name": "Toggle Resolved",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"ITEM_ID\",\n  \"shoppingListId\": \"LIST_ID\",\n  \"awid\": \"workspace1\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-uu-identity",
+          "value": "user123"
+        },
+        {
+          "name": "x-authorities",
+          "value": "Operatives"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732924787000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_shopping_list",
+      "parentId": "wrk_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "name": "Shopping Lists",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1732924800000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_member",
+      "parentId": "wrk_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "name": "Members",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1732924793000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_item",
+      "parentId": "wrk_shopping_list",
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "name": "Items",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1732924790000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_shopping_list",
+      "parentId": null,
+      "modified": 1732924800000,
+      "created": 1732924800000,
+      "name": "Shopping List API",
+      "description": "",
+      "scope": null,
+      "_type": "workspace"
+    }
+  ]
+}
+

@@ -1,5 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
-const { isOwner } = require('../../../config/profiles');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const updateSchema = {
   required: ['id', 'awid'],
@@ -70,34 +70,62 @@ async function update(req, res) {
       });
     }
 
-    // Проверка прав (только owner может обновлять)
-    // В реальном приложении здесь будет проверка из БД
-    const mockOwnerUuIdentity = 'owner123';
-    if (!isOwner(session, mockOwnerUuIdentity) && !session.authorizedProfiles.includes('Authorities')) {
-      return res.status(403).json({
-        status: 403,
-        error: 'Only owner can update the list',
+    // Получение списка
+    const list = await ShoppingList.findById(dtoIn.id);
+
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
         uuAppErrorMap: {
-          'shoppingList/update/ownerOnlyError': {
-            message: 'Only owner can update the list',
+          'shoppingList/update/listNotFound': {
+            message: 'List not found',
             paramMap: {}
           }
         }
       });
     }
 
-    // Возврат dtoOut
+    // Проверка прав (только владелец)
+    if (list.ownerUuIdentity !== session.uuIdentity) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Only owner can update list',
+        uuAppErrorMap: {
+          'shoppingList/update/accessDenied': {
+            message: 'Only owner can update list',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    // Обновление полей
+    if (dtoIn.name !== undefined) {
+      list.name = dtoIn.name.trim();
+    }
+    if (dtoIn.members !== undefined) {
+      list.members = dtoIn.members;
+    }
+    if (dtoIn.items !== undefined) {
+      list.items = dtoIn.items;
+      list.updateProgress();
+    }
+
+    list.updated = new Date();
+    const updatedList = await list.save();
+
     const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      name: dtoIn.name || 'Updated List Name',
-      state: 'active',
-      ownerUuIdentity: mockOwnerUuIdentity,
-      members: [],
-      items: [],
-      progress: { completed: 0, total: 0 },
-      memberCount: 1,
-      updated: new Date().toISOString(),
+      awid: updatedList.awid,
+      id: updatedList._id.toString(),
+      name: updatedList.name,
+      state: updatedList.state,
+      ownerUuIdentity: updatedList.ownerUuIdentity,
+      members: updatedList.members,
+      items: updatedList.items,
+      progress: updatedList.progress,
+      memberCount: updatedList.memberCount,
+      updated: updatedList.updated.toISOString(),
       uuAppErrorMap
     };
 
@@ -117,4 +145,6 @@ async function update(req, res) {
 }
 
 module.exports = update;
+
+
 

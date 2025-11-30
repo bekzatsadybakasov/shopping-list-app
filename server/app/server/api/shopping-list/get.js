@@ -1,4 +1,5 @@
 const { validateDtoIn } = require('../../../middleware/validation');
+const ShoppingList = require('../../../models/ShoppingList');
 
 const getSchema = {
   required: ['id', 'awid'],
@@ -64,26 +65,50 @@ async function get(req, res) {
       });
     }
 
-    // Возврат dtoOut (пока без бизнес-логики)
-    const dtoOut = {
-      awid: dtoIn.awid,
-      id: dtoIn.id,
-      name: 'Example Shopping List',
-      state: 'active',
-      ownerUuIdentity: 'owner123',
-      members: [
-        {
-          uuIdentity: 'owner123',
-          isOwner: true
+    // Получение из MongoDB
+    const list = await ShoppingList.findById(dtoIn.id);
+    
+    if (!list) {
+      return res.status(404).json({
+        status: 404,
+        error: 'List not found',
+        uuAppErrorMap: {
+          'shoppingList/get/listNotFound': {
+            message: 'List not found',
+            paramMap: {}
+          }
         }
-      ],
-      items: [],
-      progress: {
-        completed: 0,
-        total: 0
-      },
-      memberCount: 1,
-      updated: new Date().toISOString(),
+      });
+    }
+
+    // Проверка доступа (владелец или участник)
+    const isOwner = list.ownerUuIdentity === session.uuIdentity;
+    const isMember = list.members.some(m => m.uuIdentity === session.uuIdentity);
+    
+    if (!isOwner && !isMember) {
+      return res.status(403).json({
+        status: 403,
+        error: 'Access denied',
+        uuAppErrorMap: {
+          'shoppingList/get/accessDenied': {
+            message: 'Access denied',
+            paramMap: {}
+          }
+        }
+      });
+    }
+
+    const dtoOut = {
+      awid: list.awid,
+      id: list._id.toString(),
+      name: list.name,
+      state: list.state,
+      ownerUuIdentity: list.ownerUuIdentity,
+      members: list.members,
+      items: list.items,
+      progress: list.progress,
+      memberCount: list.memberCount,
+      updated: list.updated.toISOString(),
       uuAppErrorMap
     };
 
@@ -103,4 +128,6 @@ async function get(req, res) {
 }
 
 module.exports = get;
+
+
 
